@@ -1,0 +1,30 @@
+jwt:
+  secretKey: lkjhgfdrffhjnbvdxsdyukjikokgygfewaswwsfvbnbnjkoktfxsdf
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: order-service
+          uri: ${ORDER_SERVICE_URI:lb://ORDER-SERVICE}
+          predicates: 
+            - Path=/api/v1/orders/**
+          filters: 
+            - StripPrefix=2
+            - RedirectTo=302, http://google.com
+            - name: LoggingOrdersFilter
+            - name: Authentication
+              args: 
+                isEnabled: false
+            - name: Authorization
+              args:
+                allowedRoles: ADMIN, SUPER_ADMIN
+
+        - id: inventory-service
+          uri: ${INVENTORY_SERVICE_URI:lb://INVENTORY_SERVICE}
+          predicates: 
+            - Path=/api/v1/inventory/**
+          filters:
+            - StripPrefix=2
+            - AddRequestHeader=X-Custom-Header, Jay
+            - name: Authentication
